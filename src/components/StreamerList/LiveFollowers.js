@@ -15,12 +15,15 @@ export default function LiveFollowers({
   const [allLiveFollowers, setAllLiveFollowers] = useState([]);
 
   useEffect(() => {
+    let refreshing = false;
     const getData = async () => {
+      refreshing = true;
       try {
         let liveFollowers = [];
+        let tempIds = [...allFollowerIds];
 
         do {
-          let ids = allFollowerIds
+          let ids = tempIds
             .splice(0, 100)
             .map((id) => `user_id=${id}`)
             .join("&");
@@ -57,10 +60,11 @@ export default function LiveFollowers({
 
             liveFollowers = [...liveFollowers, ...combinedData];
           }
-        } while (allFollowerIds.length > 0);
+        } while (tempIds.length > 0);
 
         liveFollowers.sort((a, b) => b.viewer_count - a.viewer_count);
         setAllLiveFollowers(liveFollowers);
+        refreshing = false;
         setLoading(false);
       } catch (err) {
         setError(err);
@@ -68,6 +72,14 @@ export default function LiveFollowers({
       }
     };
     getData();
+
+    const interval = setInterval(() => {
+      if (!refreshing) getData();
+    }, 60000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [accessToken, allFollowerIds, clientId]);
 
   if (loading)
