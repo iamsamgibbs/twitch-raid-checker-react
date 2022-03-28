@@ -5,13 +5,13 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import ListItemText from "@mui/material/ListItemText";
 import PersonIcon from "@mui/icons-material/Person";
+import Typography from "@mui/material/Typography";
 
 import { msToTime } from "../../utils";
 
 export default function LiveFollowerItem({ follower }) {
-  // need to match follower to user to get profile image
   const elapsed = Date.now() - new Date(follower.started_at);
-
+  const threshold = 3 * 60 * 60 * 1000;
   const uptime = msToTime(elapsed);
 
   return (
@@ -21,11 +21,16 @@ export default function LiveFollowerItem({ follower }) {
       </ListItemAvatar>
       <ListItemText
         primary={
-          <>
-            {follower.user_name} - <PersonIcon /> {follower.viewer_count}
-          </>
+          <Typography color={elapsed > threshold ? "error" : ""}>
+            {follower.user_name} - <PersonIcon fontSize="small" />{" "}
+            {follower.viewer_count}
+          </Typography>
         }
-        secondary={`${follower.game_name} - ${uptime}`}
+        secondary={
+          <Typography color={elapsed > threshold ? "error" : ""}>
+            {uptime} - {follower.game_name}
+          </Typography>
+        }
       />
     </ListItem>
   );
