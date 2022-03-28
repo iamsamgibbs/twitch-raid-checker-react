@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import "./App.css";
+
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const clientId = "rtgfj7m5fq9afcrhidnirdej66ve7j";
+  const parsedHash = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = parsedHash.get("access_token");
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (accessToken) {
+      setLoggedIn(true);
+    }
+  }, [accessToken]);
+
+  if (loggedIn) {
+    try {
+    } catch (err) {
+      console.log(err);
+    }
+    return <Dashboard clientId={clientId} accessToken={accessToken} />;
+  } else {
+    return <Login clientId={clientId} />;
+  }
 }
 
 export default App;
