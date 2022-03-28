@@ -6,25 +6,32 @@ import Dashboard from "./components/Dashboard";
 
 function App() {
   const clientId = "rtgfj7m5fq9afcrhidnirdej66ve7j";
-  const parsedHash = new URLSearchParams(window.location.hash.slice(1));
-  const accessToken = parsedHash.get("access_token");
+  const [accessToken, setAccessToken] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (accessToken) {
-      setLoggedIn(true);
-    }
-  }, [accessToken]);
+    const savedToken = localStorage.getItem("accessToken");
 
-  if (loggedIn) {
-    try {
-    } catch (err) {
-      console.log(err);
+    if (savedToken) {
+      setAccessToken(JSON.parse(savedToken));
+      setLoggedIn(true);
+    } else {
+      const parsedHash = new URLSearchParams(window.location.hash.slice(1));
+      const parsedToken = parsedHash.get("access_token");
+
+      if (parsedToken) {
+        setAccessToken(parsedToken);
+        localStorage.setItem("accessToken", JSON.stringify(parsedToken));
+        setLoggedIn(true);
+      }
     }
-    return <Dashboard clientId={clientId} accessToken={accessToken} />;
-  } else {
-    return <Login clientId={clientId} />;
-  }
+  }, []);
+
+  return loggedIn ? (
+    <Dashboard clientId={clientId} accessToken={accessToken} />
+  ) : (
+    <Login clientId={clientId} />
+  );
 }
 
 export default App;

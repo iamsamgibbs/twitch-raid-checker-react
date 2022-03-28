@@ -14,30 +14,38 @@ export default function Dashboard({ clientId, accessToken }) {
   const [userData, setUserData] = useState({});
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const {
-          data: {
-            data: [user],
-          },
-        } = await axios({
-          url: "https://api.twitch.tv/helix/users",
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Client-Id": clientId,
-          },
-        });
+    const savedUserData = localStorage.getItem("userData");
 
-        setUserData(user);
-        setLoading(false);
-      } catch (err) {
-        setError(err);
-        setLoading(false);
-      }
-    };
-    getData();
-  }, [accessToken, clientId, userData, loading]);
+    if (savedUserData) {
+      setUserData(JSON.parse(savedUserData));
+      setLoading(false);
+    } else {
+      const getData = async () => {
+        try {
+          const {
+            data: {
+              data: [user],
+            },
+          } = await axios({
+            url: "https://api.twitch.tv/helix/users",
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Client-Id": clientId,
+            },
+          });
+
+          setUserData(user);
+          localStorage.setItem("userData", JSON.stringify(user));
+          setLoading(false);
+        } catch (err) {
+          setError(err);
+          setLoading(false);
+        }
+      };
+      getData();
+    }
+  }, [accessToken, clientId, loading]);
 
   return loading ? (
     <Loading loadingMessage="Getting user data..." />

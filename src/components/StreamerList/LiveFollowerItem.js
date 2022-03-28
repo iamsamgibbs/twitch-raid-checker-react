@@ -14,15 +14,10 @@ export default function LiveFollowerItem({ follower }) {
 
   const uptime = msToTime(elapsed);
 
-  let thumbnailUrl = follower.thumbnail_url;
-
-  thumbnailUrl = thumbnailUrl.replace("{width}", 1920);
-  thumbnailUrl = thumbnailUrl.replace("{height}", 1080);
-
   return (
     <ListItem>
       <ListItemAvatar>
-        <Avatar alt={follower.user_name} src={thumbnailUrl} />
+        <Avatar alt={follower.user_name} src={follower.profile_image_url} />
       </ListItemAvatar>
       <ListItemText
         primary={

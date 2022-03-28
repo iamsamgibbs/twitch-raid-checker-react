@@ -39,6 +39,13 @@ export default function StreamerList({ clientId, accessToken, userData }) {
         } while (after !== undefined);
 
         setAllFollowerIds(followerIds);
+        localStorage.setItem(
+          "followerIds",
+          JSON.stringify({
+            expires_at: Date.now() + 24 * 60 * 60 * 1000,
+            ids: followerIds,
+          })
+        );
         setLoading(false);
       } catch (err) {
         setError(err);
@@ -46,7 +53,21 @@ export default function StreamerList({ clientId, accessToken, userData }) {
       }
     };
 
-    getData();
+    const savedFollowerIds = localStorage.getItem("followerIds");
+
+    if (savedFollowerIds) {
+      const parsed = JSON.parse(savedFollowerIds);
+      const expiresAt = parsed.expires_at;
+
+      if (Date.now() < new Date(expiresAt)) {
+        setAllFollowerIds(parsed.ids);
+        setLoading(false);
+      } else {
+        getData();
+      }
+    } else {
+      getData();
+    }
   }, [accessToken, clientId, userData.id]);
 
   return loading ? (

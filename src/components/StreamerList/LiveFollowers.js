@@ -26,7 +26,7 @@ export default function LiveFollowers({
             .join("&");
 
           const {
-            data: { data },
+            data: { data: streams },
           } = await axios({
             url: `https://api.twitch.tv/helix/streams?${ids}`,
             method: "GET",
@@ -36,7 +36,27 @@ export default function LiveFollowers({
             },
           });
 
-          if (data.length) liveFollowers = [...liveFollowers, ...data];
+          if (streams.length) {
+            const liveIds = streams.map((d) => `id=${d.user_id}`).join("&");
+
+            const {
+              data: { data: users },
+            } = await axios({
+              url: `https://api.twitch.tv/helix/users?${liveIds}`,
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Client-Id": clientId,
+              },
+            });
+
+            const combinedData = streams.map((stream) => ({
+              ...stream,
+              ...users.find((user) => user.id === stream.user_id),
+            }));
+
+            liveFollowers = [...liveFollowers, ...combinedData];
+          }
         } while (allFollowerIds.length > 0);
 
         liveFollowers.sort((a, b) => b.viewer_count - a.viewer_count);
