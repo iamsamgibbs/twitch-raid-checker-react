@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
@@ -7,12 +7,23 @@ import ListItemText from "@mui/material/ListItemText";
 import PersonIcon from "@mui/icons-material/Person";
 import Typography from "@mui/material/Typography";
 
-import { msToTime } from "../../utils";
+import { msToTime, numberWithCommas } from "../../utils";
 
 export default function LiveFollowerItem({ follower }) {
-  const elapsed = Date.now() - new Date(follower.started_at);
+  const [elapsed, setElapsed] = useState(
+    Date.now() - new Date(follower.started_at)
+  );
+  const [uptime, setUptime] = useState(msToTime(elapsed, "hms"));
   const threshold = 3 * 60 * 60 * 1000;
-  const uptime = msToTime(elapsed);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsed(Date.now() - new Date(follower.started_at));
+      setUptime(msToTime(elapsed, "hms"));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [elapsed, follower.started_at]);
 
   return (
     <ListItem>
@@ -23,7 +34,7 @@ export default function LiveFollowerItem({ follower }) {
         primary={
           <Typography color={elapsed > threshold ? "error" : ""}>
             {follower.user_name} - <PersonIcon fontSize="small" />{" "}
-            {follower.viewer_count}
+            {numberWithCommas(follower.viewer_count)}
           </Typography>
         }
         secondary={

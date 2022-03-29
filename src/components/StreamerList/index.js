@@ -5,10 +5,18 @@ import Loading from "../Loading";
 import Error from "../Error";
 import LiveFollowers from "./LiveFollowers";
 
-export default function StreamerList({ clientId, accessToken, userData }) {
+export default function StreamerList({
+  clientId,
+  accessToken,
+  userData,
+  setTimeUntilRefresh,
+}) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [allFollowerIds, setAllFollowerIds] = useState([]);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Getting follower data..."
+  );
 
   useEffect(() => {
     const getData = async () => {
@@ -20,6 +28,7 @@ export default function StreamerList({ clientId, accessToken, userData }) {
             data: {
               data,
               pagination: { cursor },
+              total,
             },
           } = await axios({
             url: `https://api.twitch.tv/helix/users/follows?to_id=${userData.id}&first=100&after=${after}`,
@@ -34,6 +43,10 @@ export default function StreamerList({ clientId, accessToken, userData }) {
             ...followerIds,
             ...data.map((follower) => follower.from_id),
           ];
+
+          setLoadingMessage(
+            `Loading ${followerIds.length} / ${total} followers...`
+          );
 
           after = cursor;
         } while (after !== undefined);
@@ -71,7 +84,7 @@ export default function StreamerList({ clientId, accessToken, userData }) {
   }, [accessToken, clientId, userData.id]);
 
   return loading ? (
-    <Loading loadingMessage="Getting follower data..." />
+    <Loading loadingMessage={loadingMessage} />
   ) : error ? (
     <Error errorMessage="Something went wrong loading followers..." />
   ) : (
@@ -79,6 +92,7 @@ export default function StreamerList({ clientId, accessToken, userData }) {
       clientId={clientId}
       accessToken={accessToken}
       allFollowerIds={allFollowerIds}
+      setTimeUntilRefresh={setTimeUntilRefresh}
     />
   );
 }

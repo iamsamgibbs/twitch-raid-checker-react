@@ -12,6 +12,7 @@ export default function Dashboard({ clientId, accessToken }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userData, setUserData] = useState({});
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState(0);
 
   useEffect(() => {
     const savedUserData = localStorage.getItem("userData");
@@ -53,11 +54,12 @@ export default function Dashboard({ clientId, accessToken }) {
     <Error errorMessage="You are not authenticated." />
   ) : (
     <Container>
-      <User userData={userData} />
+      <User userData={userData} timeUntilRefresh={timeUntilRefresh} />
       <StreamerList
         clientId={clientId}
         accessToken={accessToken}
         userData={userData}
+        setTimeUntilRefresh={setTimeUntilRefresh}
       />
     </Container>
   );

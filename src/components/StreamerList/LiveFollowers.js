@@ -9,10 +9,16 @@ export default function LiveFollowers({
   clientId,
   accessToken,
   allFollowerIds,
+  setTimeUntilRefresh,
 }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [allLiveFollowers, setAllLiveFollowers] = useState([]);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Getting live follower data..."
+  );
+
+  const refreshRate = 300000;
 
   useEffect(() => {
     let refreshing = false;
@@ -60,6 +66,18 @@ export default function LiveFollowers({
 
             liveFollowers = [...liveFollowers, ...combinedData];
           }
+
+          console.log(
+            `Getting currently live followers: ${
+              allFollowerIds.length - tempIds.length
+            } / ${allFollowerIds.length}`
+          );
+
+          setLoadingMessage(
+            `Getting currently live followers: ${
+              allFollowerIds.length - tempIds.length
+            } / ${allFollowerIds.length}`
+          );
         } while (tempIds.length > 0);
 
         liveFollowers.sort((a, b) => b.viewer_count - a.viewer_count);
@@ -73,17 +91,25 @@ export default function LiveFollowers({
     };
     getData();
 
+    let remaining = refreshRate / 1000;
+
     const interval = setInterval(() => {
+      remaining = refreshRate / 1000;
       if (!refreshing) getData();
-    }, 60000);
+    }, refreshRate);
+
+    const timer = setInterval(() => {
+      remaining--;
+      setTimeUntilRefresh(remaining);
+    }, 1000);
 
     return () => {
       clearInterval(interval);
+      clearInterval(timer);
     };
-  }, [accessToken, allFollowerIds, clientId]);
+  }, [accessToken, allFollowerIds, clientId, setTimeUntilRefresh]);
 
-  if (loading)
-    return <Loading loadingMessage="Getting live follower data..." />;
+  if (loading) return <Loading loadingMessage={loadingMessage} />;
 
   if (error)
     return <Error errorMessage="Something went wrong loading followers..." />;

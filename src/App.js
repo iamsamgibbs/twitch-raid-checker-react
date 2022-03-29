@@ -5,7 +5,7 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 
 function App() {
-  const clientId = "rtgfj7m5fq9afcrhidnirdej66ve7j";
+  const clientId = process.env.REACT_APP_TWITCH_CLIENT_ID;
   const [accessToken, setAccessToken] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
 
