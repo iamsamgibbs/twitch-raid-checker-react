@@ -18,17 +18,28 @@ function App() {
     } else {
       const parsedHash = new URLSearchParams(window.location.hash.slice(1));
       const parsedToken = parsedHash.get("access_token");
+      const parsedState = parsedHash.get("state");
 
-      if (parsedToken) {
-        setAccessToken(parsedToken);
-        localStorage.setItem("accessToken", JSON.stringify(parsedToken));
-        setLoggedIn(true);
+      if (parsedToken && parsedState) {
+        window.location.assign("/");
+        const storedState = JSON.parse(localStorage.getItem("stateToken"));
+        if (storedState === parsedState) {
+          setAccessToken(parsedToken);
+          localStorage.setItem("accessToken", JSON.stringify(parsedToken));
+          setLoggedIn(true);
+        } else {
+          console.log("State token invalid, retry authentication");
+        }
       }
     }
   }, []);
 
   return loggedIn ? (
-    <Dashboard clientId={clientId} accessToken={accessToken} />
+    <Dashboard
+      clientId={clientId}
+      accessToken={accessToken}
+      setLoggedIn={setLoggedIn}
+    />
   ) : (
     <Login clientId={clientId} />
   );

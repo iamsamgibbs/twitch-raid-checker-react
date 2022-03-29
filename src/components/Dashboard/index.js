@@ -8,7 +8,7 @@ import Error from "../Error";
 import User from "../User";
 import StreamerList from "../StreamerList";
 
-export default function Dashboard({ clientId, accessToken }) {
+export default function Dashboard({ clientId, accessToken, setLoggedIn }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userData, setUserData] = useState({});
@@ -54,7 +54,11 @@ export default function Dashboard({ clientId, accessToken }) {
     <Error errorMessage="You are not authenticated." />
   ) : (
     <Container>
-      <User userData={userData} timeUntilRefresh={timeUntilRefresh} />
+      <User
+        userData={userData}
+        timeUntilRefresh={timeUntilRefresh}
+        setLoggedIn={setLoggedIn}
+      />
       <StreamerList
         clientId={clientId}
         accessToken={accessToken}
