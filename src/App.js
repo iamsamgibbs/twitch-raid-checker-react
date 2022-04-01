@@ -8,6 +8,7 @@ function App() {
   const clientId = process.env.REACT_APP_TWITCH_CLIENT_ID;
   const [accessToken, setAccessToken] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("accessToken");
@@ -34,14 +35,25 @@ function App() {
     }
   }, []);
 
-  return loggedIn ? (
+  const handleLogout = () => {
+    localStorage.removeItem("stateToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("followerIds");
+    setLoggedIn(false);
+    setDemoMode(false);
+  };
+
+  return loggedIn || demoMode ? (
     <Dashboard
       clientId={clientId}
       accessToken={accessToken}
-      setLoggedIn={setLoggedIn}
+      handleLogout={handleLogout}
+      setDemoMode={setDemoMode}
+      demoMode={demoMode}
     />
   ) : (
-    <Login clientId={clientId} />
+    <Login clientId={clientId} setDemoMode={setDemoMode} />
   );
 }
 

@@ -9,14 +9,15 @@ import Box from "@mui/material/Box";
 
 import { msToTime } from "../../utils";
 
-export default function User({ userData, timeUntilRefresh, setLoggedIn }) {
-  const handleLogout = () => {
-    localStorage.removeItem("stateToken");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("userData");
-    localStorage.removeItem("followerIds");
-    setLoggedIn(false);
-  };
+export default function User({
+  userData,
+  timeUntilRefresh,
+  handleLogout,
+  demoMode,
+}) {
+  const userString = demoMode
+    ? `Showing followers of: ${userData.display_name}`
+    : `Hello ${userData.display_name}!`;
   return (
     <Card>
       <Box m={0.5}>
@@ -31,7 +32,7 @@ export default function User({ userData, timeUntilRefresh, setLoggedIn }) {
             src={userData.profile_image_url}
           />
           <Typography variant="subtitle1">
-            Hello {userData.display_name}! - Next refresh:{" "}
+            {userString} - Next refresh:{" "}
             {msToTime(timeUntilRefresh * 1000, "ms")}
           </Typography>
           <Button variant="contained" color="secondary" onClick={handleLogout}>

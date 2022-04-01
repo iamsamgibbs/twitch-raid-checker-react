@@ -8,7 +8,12 @@ import Error from "../Error";
 import User from "../User";
 import StreamerList from "../StreamerList";
 
-export default function Dashboard({ clientId, accessToken, setLoggedIn }) {
+export default function Dashboard({
+  clientId,
+  accessToken,
+  handleLogout,
+  demoMode,
+}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userData, setUserData] = useState({});
@@ -23,19 +28,29 @@ export default function Dashboard({ clientId, accessToken, setLoggedIn }) {
     } else {
       const getData = async () => {
         try {
+          let axiosOptions = {};
+
+          if (demoMode) {
+            axiosOptions = {
+              url: `${process.env.REACT_APP_DEMO_URL}/users?login=${process.env.REACT_APP_DEMO_USER}`,
+              method: "GET",
+            };
+          } else {
+            axiosOptions = {
+              url: "https://api.twitch.tv/helix/users",
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Client-Id": clientId,
+              },
+            };
+          }
+
           const {
             data: {
               data: [user],
             },
-          } = await axios({
-            url: "https://api.twitch.tv/helix/users",
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Client-Id": clientId,
-            },
-          });
-
+          } = await axios(axiosOptions);
           setUserData(user);
           localStorage.setItem("userData", JSON.stringify(user));
           setLoading(false);
@@ -46,7 +61,7 @@ export default function Dashboard({ clientId, accessToken, setLoggedIn }) {
       };
       getData();
     }
-  }, [accessToken, clientId, loading]);
+  }, [accessToken, clientId, loading, demoMode]);
 
   return loading ? (
     <Loading loadingMessage="Getting user data..." />
@@ -57,13 +72,15 @@ export default function Dashboard({ clientId, accessToken, setLoggedIn }) {
       <User
         userData={userData}
         timeUntilRefresh={timeUntilRefresh}
-        setLoggedIn={setLoggedIn}
+        handleLogout={handleLogout}
+        demoMode={demoMode}
       />
       <StreamerList
         clientId={clientId}
         accessToken={accessToken}
         userData={userData}
         setTimeUntilRefresh={setTimeUntilRefresh}
+        demoMode={demoMode}
       />
     </Container>
   );

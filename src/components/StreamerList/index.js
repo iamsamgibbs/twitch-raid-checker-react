@@ -10,6 +10,7 @@ export default function StreamerList({
   accessToken,
   userData,
   setTimeUntilRefresh,
+  demoMode,
 }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -23,21 +24,33 @@ export default function StreamerList({
       try {
         let after = "";
         let followerIds = [];
+
         do {
+          let axiosOptions = {};
+
+          if (demoMode) {
+            axiosOptions = {
+              url: `${process.env.REACT_APP_DEMO_URL}/users/follows?to_id=${userData.id}&first=100&after=${after}`,
+              method: "GET",
+            };
+          } else {
+            axiosOptions = {
+              url: `https://api.twitch.tv/helix/users/follows?to_id=${userData.id}&first=100&after=${after}`,
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Client-Id": clientId,
+              },
+            };
+          }
+
           const {
             data: {
               data,
               pagination: { cursor },
               total,
             },
-          } = await axios({
-            url: `https://api.twitch.tv/helix/users/follows?to_id=${userData.id}&first=100&after=${after}`,
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Client-Id": clientId,
-            },
-          });
+          } = await axios(axiosOptions);
 
           followerIds = [
             ...followerIds,
@@ -81,7 +94,7 @@ export default function StreamerList({
     } else {
       getData();
     }
-  }, [accessToken, clientId, userData.id]);
+  }, [accessToken, clientId, userData.id, demoMode]);
 
   return loading ? (
     <Loading loadingMessage={loadingMessage} />
@@ -93,6 +106,7 @@ export default function StreamerList({
       accessToken={accessToken}
       allFollowerIds={allFollowerIds}
       setTimeUntilRefresh={setTimeUntilRefresh}
+      demoMode={demoMode}
     />
   );
 }

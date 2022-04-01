@@ -10,6 +10,7 @@ export default function LiveFollowers({
   accessToken,
   allFollowerIds,
   setTimeUntilRefresh,
+  demoMode,
 }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,30 +35,52 @@ export default function LiveFollowers({
             .map((id) => `user_id=${id}`)
             .join("&");
 
-          const {
-            data: { data: streams },
-          } = await axios({
-            url: `https://api.twitch.tv/helix/streams?${ids}`,
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Client-Id": clientId,
-            },
-          });
+          let axiosOptions = {};
 
-          if (streams.length) {
-            const liveIds = streams.map((d) => `id=${d.user_id}`).join("&");
-
-            const {
-              data: { data: users },
-            } = await axios({
-              url: `https://api.twitch.tv/helix/users?${liveIds}`,
+          if (demoMode) {
+            axiosOptions = {
+              url: `${process.env.REACT_APP_DEMO_URL}/streams?${ids}`,
+              method: "GET",
+            };
+          } else {
+            axiosOptions = {
+              url: `https://api.twitch.tv/helix/streams?${ids}`,
               method: "GET",
               headers: {
                 Authorization: `Bearer ${accessToken}`,
                 "Client-Id": clientId,
               },
-            });
+            };
+          }
+
+          const {
+            data: { data: streams },
+          } = await axios(axiosOptions);
+
+          if (streams.length) {
+            const liveIds = streams.map((d) => `id=${d.user_id}`).join("&");
+
+            let axiosUserOptions = {};
+
+            if (demoMode) {
+              axiosUserOptions = {
+                url: `${process.env.REACT_APP_DEMO_URL}/users?${liveIds}`,
+                method: "GET",
+              };
+            } else {
+              axiosUserOptions = {
+                url: `https://api.twitch.tv/helix/users?${liveIds}`,
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  "Client-Id": clientId,
+                },
+              };
+            }
+
+            const {
+              data: { data: users },
+            } = await axios(axiosUserOptions);
 
             const combinedData = streams.map((stream) => ({
               ...stream,
@@ -107,7 +130,7 @@ export default function LiveFollowers({
       clearInterval(interval);
       clearInterval(timer);
     };
-  }, [accessToken, allFollowerIds, clientId, setTimeUntilRefresh]);
+  }, [accessToken, allFollowerIds, clientId, setTimeUntilRefresh, demoMode]);
 
   if (loading) return <Loading loadingMessage={loadingMessage} />;
 
