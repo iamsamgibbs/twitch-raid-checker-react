@@ -46,6 +46,8 @@ export default function Dashboard({
             };
           }
 
+          console.log(axiosOptions);
+
           const {
             data: {
               data: [user],
@@ -56,6 +58,7 @@ export default function Dashboard({
           setLoading(false);
         } catch (err) {
           setError(err);
+          console.log("err", err);
           setLoading(false);
         }
       };
